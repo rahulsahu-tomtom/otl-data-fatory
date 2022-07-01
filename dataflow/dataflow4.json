@@ -1,0 +1,72 @@
+{
+	"name": "dataflow4",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "points"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointsink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pointid as long,",
+				"          waytext as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT\\npop.osm_id pointId,\\nST_AsText(pop.way) as waytext\\nFROM planet_osm_rels por\\njoin planet_osm_point pop on cast(pop.osm_id as varchar) = substring(por.members[1],2)\\nwhere cast(por.members as varchar) like \\'%postalarea_center%\\' and por.id = 2000271000001143',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> points",
+				"points derive(uuid = uuid()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          osm_id as long,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'point_vad',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update point_vad\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          osm_id = pointid,",
+				"          geometrytext = waytext,",
+				"          id = uuid",
+				"     )) ~> pointsink"
+			]
+		}
+	}
+}

@@ -1,0 +1,177 @@
+{
+	"name": "df_addressable_area_stagging",
+	"properties": {
+		"folder": {
+			"name": "Belgium_Admin"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "admincenter"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "label"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "releation"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "polygonstagging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "addressableareastagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "admincenterlabel"
+				},
+				{
+					"name": "relpolygon"
+				},
+				{
+					"name": "adminarea"
+				},
+				{
+					"name": "derivedcol"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          areaosmid as long,",
+				"          centeruuidid as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select\\npor.id as areaosmid,\\npop.id  as centeruuidid\\nfrom planet_osm_rels por\\nleft join area_center_stagging pop  on hstore(members) -> concat(\\'n\\',pop.osm_id)=\\'admin_centre\\'',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> admincenter",
+				"source(output(",
+				"          areaosmid as long,",
+				"          labeluuidid as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select\\npor.id as areaosmid,\\npop.id as labeluuidid\\nfrom planet_osm_rels por\\nleft join area_center_stagging pop  on hstore(members) -> concat(\\'n\\',pop.osm_id)=\\'label\\'',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> label",
+				"source(output(",
+				"          osm_id as long,",
+				"          sourcetype as string,",
+				"          boundarytype as string,",
+				"          boundary as string,",
+				"          name as string,",
+				"          admin_level as short,",
+				"          country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select por.id osm_id, \\nhstore(por.tags) -> \\'source\\' as sourceType,\\nhstore(por.tags) ->\\'type\\' as boundaryType,\\nhstore(por.tags) ->\\'boundary\\' as boundary,\\nhstore(por.tags) ->\\'name\\' as name,\\ncast(hstore(por.tags) ->\\'admin_level\\' as int2) as admin_level,\\n\\'BEL\\' as country\\nfrom planet_osm_rels por',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> releation",
+				"source(output(",
+				"          osm_id as long,",
+				"          geometrytext as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select osm_id ,  st_astext(geometry) as geometrytext from polygon_stagging ps',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> polygonstagging",
+				"admincenter, label join(admincenter@areaosmid == label@areaosmid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> admincenterlabel",
+				"releation, polygonstagging join(releation@osm_id == polygonstagging@osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> relpolygon",
+				"admincenterlabel, relpolygon join(admincenter@areaosmid == releation@osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> adminarea",
+				"adminarea derive(area_uuid = uuid(),",
+				"          createdate = currentTimestamp(),",
+				"          modifieddate = currentTimestamp(),",
+				"          labeluuidid = iifNull(labeluuidid, '00000000-0000-0000-0000-000000000000'),",
+				"          centeruuidid = iifNull(centeruuidid, '00000000-0000-0000-0000-000000000000')) ~> derivedcol",
+				"derivedcol sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          osm_id as long,",
+				"          name as string,",
+				"          boundary as string,",
+				"          admin_level as short,",
+				"          admin_center_id as string,",
+				"          area_label_id as string,",
+				"          country as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          source_type as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'addressable_area_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update addressable_area_stagging \\nset geometry = ST_GeomFromText(geometrytext)\\n','update addressable_area_stagging \\nset admin_center_id  = null \\nwhere admin_center_id = \\'00000000-0000-0000-0000-000000000000\\'','update addressable_area_stagging \\nset area_label_id  = null \\nwhere area_label_id = \\'00000000-0000-0000-0000-000000000000\\''],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          id = area_uuid,",
+				"          osm_id = admincenter@areaosmid,",
+				"          name,",
+				"          boundary,",
+				"          admin_level,",
+				"          admin_center_id = centeruuidid,",
+				"          area_label_id = labeluuidid,",
+				"          country,",
+				"          source_type = sourcetype,",
+				"          created_date = createdate,",
+				"          modified_date = modifieddate,",
+				"          geometrytext",
+				"     )) ~> addressableareastagging"
+			]
+		}
+	}
+}

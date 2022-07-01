@@ -1,0 +1,438 @@
+{
+	"name": "PointOutputDataSet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "pointoutput_linkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "osm_id",
+				"type": "bigint",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "access",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "addr:housename",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "addr:housenumber",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "addr:interpolation",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "admin_level",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "aerialway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "aeroway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "amenity",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "area",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "barrier",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "bicycle",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "brand",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "bridge",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "boundary",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "building",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "capital",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "construction",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "covered",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "culvert",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "cutting",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "denomination",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "disused",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "ele",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "embankment",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "foot",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "generator:source",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "harbour",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "highway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "historic",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "horse",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "intermittent",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "junction",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "landuse",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "layer",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "leisure",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "lock",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "man_made",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "military",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "motorcar",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "name",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "natural",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "office",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "oneway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "operator",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "place",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "population",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "power",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "power_source",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "public_transport",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "railway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "ref",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "religion",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "route",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "service",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "shop",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "sport",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "surface",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "toll",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "tourism",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "tower:type",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "tunnel",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "water",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "waterway",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "wetland",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "width",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "wood",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "z_order",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "tags",
+				"type": "USER-DEFINED",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "way",
+				"type": "USER-DEFINED",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "planet_osm_point_test"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,77 @@
+{
+	"name": "df_point_stagging",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmnode"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointstagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "osmnodewithuuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id as long,",
+				"          lat as integer,",
+				"          lon as integer,",
+				"          gemotext as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext \\nfrom  planet_osm_nodes',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+				"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+				"osmnodewithuuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          uu_id as string,",
+				"          osm_id as long,",
+				"          lat as integer,",
+				"          lon as integer,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'point_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          osm_id = id,",
+				"          lat,",
+				"          lon,",
+				"          geometrytext = gemotext,",
+				"          uu_id = uuid",
+				"     )) ~> pointstagging"
+			]
+		}
+	}
+}

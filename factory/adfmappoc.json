@@ -1,0 +1,9 @@
+{
+	"name": "adfmappoc",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "66408f33-7afe-40ff-8b0e-16e7df18334f",
+		"tenantId": "e0c60734-5b1f-4338-a8ed-a3c256da750a"
+	}
+}

@@ -1,0 +1,65 @@
+{
+	"name": "dataflow3",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "points"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          osm_id as long,",
+				"          capital as string,",
+				"          name as string,",
+				"          place as string,",
+				"          way as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select osm_id, capital , \"name\" , place, ST_AsText(way) as way  from planet_osm_point pop',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> points",
+				"points sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          osm_id as long,",
+				"          capital as string,",
+				"          name as string,",
+				"          place as string,",
+				"          way as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'planet_osm_point_test3',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update planet_osm_point_test3\\nset way3 = ST_GeomFromText(way)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

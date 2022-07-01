@@ -1,0 +1,16 @@
+{
+	"name": "AzurePostgredataset2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePostgreSql2",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DbName1": "postgres"
+			}
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,129 @@
+{
+	"name": "df_postal_point_postal_process",
+	"properties": {
+		"description": "OSM point > postal point",
+		"folder": {
+			"name": "Belgium_Postal"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmpoint"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointstagging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postalpointstagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinpointpointstagging"
+				},
+				{
+					"name": "addeduuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          osm_id as long,",
+				"          postalcode as string,",
+				"          postalpointtype as string,",
+				"          postalcodemain as string,",
+				"          postalcodesub as string,",
+				"          sourcetype as string,",
+				"          postalpointgeometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT\\npop.osm_id,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> osmpoint",
+				"source(output(",
+				"          uu_id as string,",
+				"          osm_id as long,",
+				"          lat as integer,",
+				"          lon as integer,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'point_stagging',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+				"osmpoint, pointstagging join(osmpoint@osm_id == pointstagging@osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinpointpointstagging",
+				"joinpointpointstagging derive(pp_uuid = uuid(),",
+				"          createdate = currentTimestamp(),",
+				"          modifydate = currentTimestamp()) ~> addeduuid",
+				"addeduuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          point_id as string,",
+				"          postal_point_osm_id as long,",
+				"          postal_code as string,",
+				"          postal_point_type as string,",
+				"          postal_code_main as string,",
+				"          postal_code_sub as string,",
+				"          source_type as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          country as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'postal_point_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update postal_point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          id = pp_uuid,",
+				"          point_id = uu_id,",
+				"          postal_point_osm_id = osmpoint@osm_id,",
+				"          postal_code = postalcode,",
+				"          postal_point_type = postalpointtype,",
+				"          postal_code_main = postalcodemain,",
+				"          source_type = sourcetype,",
+				"          geometrytext = postalpointgeometry,",
+				"          created_date = createdate,",
+				"          modified_date = modifydate",
+				"     )) ~> postalpointstagging"
+			]
+		}
+	}
+}

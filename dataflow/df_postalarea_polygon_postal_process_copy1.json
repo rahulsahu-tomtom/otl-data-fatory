@@ -1,0 +1,65 @@
+{
+	"name": "df_postalarea_polygon_postal_process_copy1",
+	"properties": {
+		"description": "osm polygon > postal polygon",
+		"folder": {
+			"name": "India_Postal"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmpolygon"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "polygonstagging"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          osm_id as long,",
+				"          geometrytext as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT ABS(osm_id) as osm_id, st_astext(ST_Multi(\\'GEOMETRYCOLLECTION(\\' || string_agg(ST_AsText(way), \\', \\' ORDER BY osm_id) || \\')\\')) as geometrytext\\nfrom planet_osm_polygon\\nGROUP BY osm_id',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> osmpolygon",
+				"osmpolygon sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          osm_id as long,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'polygon_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update polygon_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          osm_id,",
+				"          geometrytext",
+				"     )) ~> polygonstagging"
+			]
+		}
+	}
+}

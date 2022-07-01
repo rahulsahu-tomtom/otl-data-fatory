@@ -1,0 +1,39 @@
+{
+	"name": "pl_area_polygon_admin_process",
+	"properties": {
+		"description": "osm polygon > postal polygon",
+		"activities": [
+			{
+				"name": "df_area_polygon_admin_process",
+				"description": "osm polygon > postal polygon",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_area_polygon_admin_process",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "AdminProcessPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-30T13:35:39Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

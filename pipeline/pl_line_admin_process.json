@@ -1,0 +1,37 @@
+{
+	"name": "pl_line_admin_process",
+	"properties": {
+		"activities": [
+			{
+				"name": "df_line_admin_process",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_line_admin_process",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "AdminProcessPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-29T11:28:12Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

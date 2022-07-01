@@ -1,0 +1,39 @@
+{
+	"name": "pl_postal_point_postal_process",
+	"properties": {
+		"description": "OSM point > postal point",
+		"activities": [
+			{
+				"name": "df_postal_point_postal_process",
+				"description": "OSM point > postal point",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_postal_point_postal_process",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "PostalProcessPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-28T12:51:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

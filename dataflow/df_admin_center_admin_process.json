@@ -1,0 +1,125 @@
+{
+	"name": "df_admin_center_admin_process",
+	"properties": {
+		"description": "OSM point > postal point",
+		"folder": {
+			"name": "Belgium_Admin"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmpoint"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointstagging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postalpointstagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinpointpointstagging"
+				},
+				{
+					"name": "addeduuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          osm_id as long,",
+				"          name as string,",
+				"          country as string,",
+				"          place as string,",
+				"          sourcetype as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select pop.osm_id, \\npop.\"name\" , \\'BEL\\' as country, pop.place , \\'TomTom\\' as sourceType, ST_AsText(pop.way) as geometry\\nFROM planet_osm_point pop',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> osmpoint",
+				"source(output(",
+				"          uu_id as string,",
+				"          osm_id as long,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'point_stagging',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+				"osmpoint, pointstagging join(osmpoint@osm_id == pointstagging@osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinpointpointstagging",
+				"joinpointpointstagging derive(ac_uuid = uuid(),",
+				"          createdate = currentTimestamp(),",
+				"          modifydate = currentTimestamp()) ~> addeduuid",
+				"addeduuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          osm_id as long,",
+				"          name as string,",
+				"          country as string,",
+				"          type as string,",
+				"          place as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          source_type as string,",
+				"          point_id as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'area_center_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update area_center_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          id = ac_uuid,",
+				"          osm_id = osmpoint@osm_id,",
+				"          name,",
+				"          country,",
+				"          place,",
+				"          source_type = sourcetype,",
+				"          point_id = uu_id,",
+				"          created_date = createdate,",
+				"          modified_date = modifydate,",
+				"          geometrytext = osmpoint@geometry",
+				"     )) ~> postalpointstagging"
+			]
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "PostgreSql1_Rakesh_Ind_Postal",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "PostgreSql1_Rakesh_Ind_Postal",
+		"annotations": [],
+		"type": "PostgreSql",
+		"typeProperties": {
+			"connectionString": "host=localhost;port=5432;database=ind-postal-process;uid=postgres;encryptionmethod=0",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIxNzBhZDJlNi00YTkxLTRhZjQtYjQ5Ny1lZDU4MzE1ZDMyYjAiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "self-integrationRuntime2",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

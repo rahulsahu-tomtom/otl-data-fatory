@@ -1,0 +1,98 @@
+{
+	"name": "df_way_point_agg_admin_process",
+	"properties": {
+		"description": "way > point agg ",
+		"folder": {
+			"name": "Belgium_Admin"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "ways"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointstagging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "linepointagg"
+				}
+			],
+			"transformations": [
+				{
+					"name": "waypointsstagging"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          nodeid as long,",
+				"          wayid as long,",
+				"          tags as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags from planet_osm_ways w',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> ways",
+				"source(output(",
+				"          uu_id as string,",
+				"          osm_id as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+				"ways, pointstagging join(nodeid == osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> waypointsstagging",
+				"waypointsstagging aggregate(groupBy(wayid,",
+				"          tags),",
+				"     nodesArray = collect(uu_id)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          way_osm_id as long,",
+				"          points as string[],",
+				"          attributes as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'line_point_agg',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          way_osm_id = wayid,",
+				"          attributes = tags,",
+				"          points = nodesArray",
+				"     )) ~> linepointagg"
+			]
+		}
+	}
+}

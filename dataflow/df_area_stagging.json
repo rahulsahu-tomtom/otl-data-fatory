@@ -1,0 +1,165 @@
+{
+	"name": "df_area_stagging",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmarea"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "polygonstagging"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postalpointstaging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "areastagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "areapolygonstagging"
+				},
+				{
+					"name": "postalpointsaggingjoin"
+				},
+				{
+					"name": "addiotnalcol"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          areaid as long,",
+				"          sourcetype as string,",
+				"          boundarytype as string,",
+				"          postalboundary as string,",
+				"          postalcode as string,",
+				"          name as string,",
+				"          country as string,",
+				"          postalpointidosmid as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select por.id areaid, \\nhstore(por.tags) -> \\'source\\' as sourceType,\\nhstore(por.tags) ->\\'type\\' as boundaryType,\\nhstore(por.tags) ->\\'boundary\\' as postalBoundary,\\nhstore(por.tags) ->\\'postal_code\\' as postalCode,\\nhstore(por.tags) ->\\'name\\' as name,\\n\\'BEL\\' as country,\\ncast ( substring(por.members[1],2) as int8) as postalPointIdOsmId\\nfrom planet_osm_rels por',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> osmarea",
+				"source(output(",
+				"          osm_id as long,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'polygon_stagging',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> polygonstagging",
+				"source(output(",
+				"          id as string,",
+				"          point_id as string,",
+				"          postal_point_osm_id as long,",
+				"          postal_code as string,",
+				"          postal_point_type as string,",
+				"          postal_code_main as string,",
+				"          postal_code_sub as string,",
+				"          source_type as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          country as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'postal_point_stagging',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> postalpointstaging",
+				"osmarea, polygonstagging join(areaid == osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> areapolygonstagging",
+				"areapolygonstagging, postalpointstaging join(postalpointidosmid == postal_point_osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> postalpointsaggingjoin",
+				"postalpointsaggingjoin derive(uuid_portalarea = uuid(),",
+				"          createdate = currentTimestamp(),",
+				"          updatedate = currentTimestamp()) ~> addiotnalcol",
+				"addiotnalcol sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          name as string,",
+				"          postal_code as string,",
+				"          postal_point_id as string,",
+				"          source_type as string,",
+				"          country as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string,",
+				"          area_osm_id as long",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'postal_area_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update postal_area_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          id = uuid_portalarea,",
+				"          postal_code = postalcode,",
+				"          postal_point_id = id,",
+				"          name,",
+				"          source_type = sourcetype,",
+				"          country = osmarea@country,",
+				"          created_date = createdate,",
+				"          modified_date,",
+				"          geometrytext = polygonstagging@geometrytext,",
+				"          area_osm_id = areaid",
+				"     )) ~> areastagging"
+			]
+		}
+	}
+}

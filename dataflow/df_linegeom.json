@@ -1,0 +1,105 @@
+{
+	"name": "df_linegeom",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "aggtest"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "points"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "aggtestfinal"
+				}
+			],
+			"transformations": [
+				{
+					"name": "wayjoin"
+				},
+				{
+					"name": "wayuuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          way_osm_id as long,",
+				"          points as string[],",
+				"          attributes as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'agg_test',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> aggtest",
+				"source(output(",
+				"          osm_id as long,",
+				"          waygeomtext as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select osm_id, st_astext(way) as waygeomtext  from planet_osm_line pol\\nwhere osm_id > 0\\n',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> points",
+				"aggtest, points join(way_osm_id == osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> wayjoin",
+				"wayjoin derive(way_uuid = uuid()) ~> wayuuid",
+				"wayuuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          way_osm_id as long,",
+				"          points as string[],",
+				"          attributes as string,",
+				"          geometrytext as string,",
+				"          geometry as string,",
+				"          pointsuuidarray as string[],",
+				"          ways_uuid as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'agg_test_final',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update agg_test_final set geometry = ST_GeomFromText(geometrytext)\\n','update agg_test_final set pointsuuidarray = cast(points as uuid[])'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          way_osm_id,",
+				"          points,",
+				"          attributes,",
+				"          geometrytext = waygeomtext,",
+				"          ways_uuid = way_uuid",
+				"     )) ~> aggtestfinal"
+			]
+		}
+	}
+}

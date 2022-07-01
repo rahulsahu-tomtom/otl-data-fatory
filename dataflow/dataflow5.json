@@ -1,0 +1,128 @@
+{
+	"name": "dataflow5",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postal"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointvad"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postalpointvadsink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "postalpointvad"
+				},
+				{
+					"name": "finaldata"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pointid as long,",
+				"          postalcode as string,",
+				"          postalpointtype as string,",
+				"          postalcodemain as string,",
+				"          postalcodesub as string,",
+				"          sourcetype as string,",
+				"          postalpointgeometry as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT\\npop.osm_id pointId,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_rels por\\njoin planet_osm_point pop on cast(pop.osm_id as varchar) = substring(por.members[1],2)\\nwhere cast(por.members as varchar) like \\'%postalarea_center%\\' and por.id = 2000271000001143',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> postal",
+				"source(output(",
+				"          id as string,",
+				"          osm_id as long,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'point_vad',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> pointvad",
+				"postal, pointvad join(pointid == osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> postalpointvad",
+				"postalpointvad derive(postalpointuuid = uuid(),",
+				"          createDate = currentTimestamp(),",
+				"          modifiedDate = currentTimestamp()) ~> finaldata",
+				"finaldata sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          point_id as string,",
+				"          postal_point_osm_id as long,",
+				"          postal_code as string,",
+				"          postal_point_type as string,",
+				"          postal_code_main as string,",
+				"          postal_code_sub as string,",
+				"          source_type as string,",
+				"          qa_status as string,",
+				"          violations as string,",
+				"          country as string,",
+				"          attributes as string,",
+				"          created_date as timestamp,",
+				"          modified_date as timestamp,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'postal_point_vad',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update postal_point_vad\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          postal_code = postalcode,",
+				"          postal_point_type = postalpointtype,",
+				"          postal_code_main = postalcodemain,",
+				"          postal_code_sub = postalcodesub,",
+				"          source_type = sourcetype,",
+				"          geometrytext = postalpointgeometry,",
+				"          id = postalpointuuid,",
+				"          created_date = createDate,",
+				"          modified_date = modifiedDate,",
+				"          point_id = id,",
+				"          postal_point_osm_id = pointid",
+				"     )) ~> postalpointvadsink"
+			]
+		}
+	}
+}

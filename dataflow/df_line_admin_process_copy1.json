@@ -1,0 +1,104 @@
+{
+	"name": "df_line_admin_process_copy1",
+	"properties": {
+		"description": "agg point > line \n(string[] uuid> uuid[] uuid)",
+		"folder": {
+			"name": "France_Admin"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "linepointagg"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "lines"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "aggtestfinal"
+				}
+			],
+			"transformations": [
+				{
+					"name": "wayjoin"
+				},
+				{
+					"name": "wayuuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          way_osm_id as long,",
+				"          points as string[],",
+				"          attributes as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'line_point_agg',",
+				"     schemaName: 'public',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> linepointagg",
+				"source(output(",
+				"          osm_id as long,",
+				"          waygeomtext as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT osm_id, st_astext(st_linemerge((st_collectionextract(\\'GEOMETRYCOLLECTION(\\' || string_agg(ST_AsText(way), \\', \\' ORDER BY osm_id) || \\')\\') ))) as waygeomtext\\nfrom planet_osm_line\\nwhere osm_id > 0\\nGROUP BY osm_id',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> lines",
+				"linepointagg, lines join(way_osm_id == osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> wayjoin",
+				"wayjoin derive(way_uuid = uuid()) ~> wayuuid",
+				"wayuuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          way_osm_id as long,",
+				"          points as string[],",
+				"          attributes as string,",
+				"          geometrytext as string,",
+				"          geometry as string,",
+				"          pointsuuidarray as string[],",
+				"          ways_uuid as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'line_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update line_stagging set geometry = ST_GeomFromText(geometrytext)\\n','update line_stagging set pointsuuidarray = cast(points as uuid[])'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          way_osm_id,",
+				"          points,",
+				"          attributes,",
+				"          geometrytext = waygeomtext,",
+				"          ways_uuid = way_uuid",
+				"     )) ~> aggtestfinal"
+			]
+		}
+	}
+}

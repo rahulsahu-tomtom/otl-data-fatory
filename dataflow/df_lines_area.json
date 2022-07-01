@@ -1,0 +1,97 @@
+{
+	"name": "df_lines_area",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "rels"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "postalareastagging"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql2",
+						"type": "LinkedServiceReference"
+					},
+					"name": "lineareastagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "areajoin"
+				},
+				{
+					"name": "derivedcols"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          rel_id as long,",
+				"          ways_uuid as string,",
+				"          membervalue as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select por.id as rel_id, pow.ways_uuid, \\nhstore(por.members) -> concat(\\'w\\',cast(pow.way_osm_id as text)) as membervalue\\nfrom\\nplanet_osm_rels por\\njoin line_stagging pow on concat(\\'w\\',cast(pow.way_osm_id as text))  = ANY(por.members)\\n',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> rels",
+				"source(output(",
+				"          areauuid as string,",
+				"          area_osm_id as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select id as areauuid, area_osm_id from postal_area_stagging',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> postalareastagging",
+				"rels, postalareastagging join(rel_id == area_osm_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> areajoin",
+				"areajoin derive(id = uuid()) ~> derivedcols",
+				"derivedcols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          area_id as string,",
+				"          line_id as string,",
+				"          member_role as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'line_area_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          id,",
+				"          line_id = ways_uuid,",
+				"          area_id = areauuid,",
+				"          member_role = membervalue",
+				"     )) ~> lineareastagging"
+			]
+		}
+	}
+}

@@ -1,0 +1,79 @@
+{
+	"name": "df_point_admin_process_copy1",
+	"properties": {
+		"description": "Populate Point staging - OSM Node data  > Point staging",
+		"folder": {
+			"name": "France_Admin"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "osmnode"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql3",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointstagging"
+				}
+			],
+			"transformations": [
+				{
+					"name": "osmnodewithuuid"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id as long,",
+				"          lat as integer,",
+				"          lon as integer,",
+				"          gemotext as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from  planet_osm_nodes',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+				"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+				"osmnodewithuuid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          uu_id as string,",
+				"          osm_id as long,",
+				"          lat as integer,",
+				"          lon as integer,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'point_stagging',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     mapColumn(",
+				"          osm_id = id,",
+				"          uu_id = uuid,",
+				"          lat,",
+				"          lon,",
+				"          geometrytext = gemotext",
+				"     )) ~> pointstagging"
+			]
+		}
+	}
+}

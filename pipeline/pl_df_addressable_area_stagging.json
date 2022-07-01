@@ -1,0 +1,37 @@
+{
+	"name": "pl_df_addressable_area_stagging",
+	"properties": {
+		"activities": [
+			{
+				"name": "df_addressable_area_stagging",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_addressable_area_stagging",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "AdminProcessPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-07-01T08:58:35Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

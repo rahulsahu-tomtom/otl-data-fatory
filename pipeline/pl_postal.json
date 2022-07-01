@@ -1,0 +1,146 @@
+{
+	"name": "pl_postal",
+	"properties": {
+		"activities": [
+			{
+				"name": "pl_point_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_point_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_postal_point_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_point_postal_process",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_postal_point_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_postal_area_polygon_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_postal_point_postal_process",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_postal_area_polygon_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_postal_area_postal_porcess",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_postal_area_polygon_postal_process",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_postal_area_postal_porcess",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_way_point_agg_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_postal_area_postal_porcess",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_way_point_agg_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_line_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_way_point_agg_postal_process",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_line_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_lines_area_postal_process",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_line_postal_process",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_lines_area_postal_process",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "PostalProcessPipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-28T14:20:15Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

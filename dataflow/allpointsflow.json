@@ -1,0 +1,78 @@
+{
+	"name": "allpointsflow",
+	"properties": {
+		"folder": {
+			"name": "Test"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "point"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreSql1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "pointsink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumns"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pointid as long,",
+				"          postalcode as string,",
+				"          postalpointtype as string,",
+				"          postalcodemain as string,",
+				"          postalcodesub as string,",
+				"          sourcetype as string,",
+				"          postalpointgeometry as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: 'SELECT\\npop.osm_id pointId,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> point",
+				"point derive(Uuid = uuid()) ~> derivedColumns",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as string,",
+				"          osm_id as long,",
+				"          metadata as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'point_vad',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update point_vad\\nset geometry= ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 0,",
+				"     mapColumn(",
+				"          id = Uuid,",
+				"          osm_id = pointid,",
+				"          geometrytext = postalpointgeometry",
+				"     )) ~> pointsink"
+			]
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "PostgreSql1_Rakesh_Fra_Admin",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "PostgreSql1_Rakesh_Fra_Admin",
+		"annotations": [],
+		"type": "PostgreSql",
+		"typeProperties": {
+			"connectionString": "host=localhost;port=5432;database=fra-admin-process;uid=postgres;encryptionmethod=0",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI3NzI0NDA4MS0yNGY4LTQwZTgtYWFjYS05YmZiN2VjMDdiNjYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "self-integrationRuntime2",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
