@@ -1,0 +1,7 @@
+{
+	"name": "AzureVMIntegrationRuntime",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "Azure Windows VM in private tomtom network running integration runtime"
+	}
+}

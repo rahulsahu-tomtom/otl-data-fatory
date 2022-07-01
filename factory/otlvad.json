@@ -1,0 +1,9 @@
+{
+	"name": "otlvad",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "acd32abe-7d46-4c74-9989-7b61155cf526",
+		"tenantId": "374f8026-7b54-4a3a-b87d-328fa26ec10d"
+	}
+}

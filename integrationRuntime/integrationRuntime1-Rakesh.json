@@ -1,0 +1,7 @@
+{
+	"name": "integrationRuntime1-Rakesh",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "integrationRuntime1-Rakesh"
+	}
+}
