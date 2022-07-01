@@ -1,0 +1,2157 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfmappoc"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_admin_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Populate Point staging - OSM Node data  > Point staging",
+				"folder": {
+					"name": "Belgium_Admin"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmnode"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "osmnodewithuuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          gemotext as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from  planet_osm_nodes',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+						"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+						"osmnodewithuuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     mapColumn(",
+						"          osm_id = id,",
+						"          uu_id = uuid,",
+						"          lat,",
+						"          lon,",
+						"          geometrytext = gemotext",
+						"     )) ~> pointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_admin_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Populate Point staging - OSM Node data  > Point staging",
+				"folder": {
+					"name": "France_Admin"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmnode"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "osmnodewithuuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          gemotext as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from  planet_osm_nodes',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+						"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+						"osmnodewithuuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     mapColumn(",
+						"          osm_id = id,",
+						"          uu_id = uuid,",
+						"          lat,",
+						"          lon,",
+						"          geometrytext = gemotext",
+						"     )) ~> pointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Populate Point staging - OSM Node data  > Point staging",
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmnode"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "osmnodewithuuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          gemotext as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext \\nfrom  planet_osm_nodes',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+						"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+						"osmnodewithuuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id = id,",
+						"          lat,",
+						"          lon,",
+						"          geometrytext = gemotext,",
+						"          uu_id = uuid",
+						"     )) ~> pointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_postal_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Populate Point staging - OSM Node data  > Point staging",
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmnode"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "osmnodewithuuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          gemotext as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext \\nfrom  planet_osm_nodes',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+						"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+						"osmnodewithuuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id = id,",
+						"          lat,",
+						"          lon,",
+						"          geometrytext = gemotext,",
+						"          uu_id = uuid",
+						"     )) ~> pointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_stagging')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmnode"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "osmnodewithuuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          gemotext as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext \\nfrom  planet_osm_nodes',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
+						"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
+						"osmnodewithuuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id = id,",
+						"          lat,",
+						"          lon,",
+						"          geometrytext = gemotext,",
+						"          uu_id = uuid",
+						"     )) ~> pointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_point_vad')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "poindvad"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"pointstagging sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          osm_id as long,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_vad',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_vad\\nset geometry = ST_GeomFromText(geometrytext)\\n'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = uu_id,",
+						"          osm_id,",
+						"          geometrytext",
+						"     )) ~> poindvad"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postal_area_admin_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "OSM releation > Polygon > Postal Area",
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmarea"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstaging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "areastagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "areapolygonstagging"
+						},
+						{
+							"name": "postalpointsaggingjoin"
+						},
+						{
+							"name": "addiotnalcol"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          areaid as long,",
+						"          sourcetype as string,",
+						"          boundarytype as string,",
+						"          postalboundary as string,",
+						"          postalcode as string,",
+						"          name as string,",
+						"          country as string,",
+						"          postalpointidosmid as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select por.id areaid, \\nhstore(por.tags) -> \\'source\\' as sourceType,\\nhstore(por.tags) ->\\'type\\' as boundaryType,\\nhstore(por.tags) ->\\'boundary\\' as postalBoundary,\\nhstore(por.tags) ->\\'postal_code\\' as postalCode,\\nhstore(por.tags) ->\\'name\\' as name,\\n\\'BEL\\' as country,\\ncast ( substring(por.members[1],2) as int8) as postalPointIdOsmId\\nfrom planet_osm_rels por',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> osmarea",
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> polygonstagging",
+						"source(output(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> postalpointstaging",
+						"osmarea, polygonstagging join(areaid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> areapolygonstagging",
+						"areapolygonstagging, postalpointstaging join(postalpointidosmid == postal_point_osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> postalpointsaggingjoin",
+						"postalpointsaggingjoin derive(uuid_portalarea = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          updatedate = currentTimestamp()) ~> addiotnalcol",
+						"addiotnalcol sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          postal_code as string,",
+						"          postal_point_id as string,",
+						"          source_type as string,",
+						"          country as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string,",
+						"          area_osm_id as long",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_area_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_area_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = uuid_portalarea,",
+						"          postal_code = postalcode,",
+						"          postal_point_id = id,",
+						"          name,",
+						"          source_type = sourcetype,",
+						"          country = osmarea@country,",
+						"          created_date = createdate,",
+						"          modified_date,",
+						"          geometrytext = polygonstagging@geometrytext,",
+						"          area_osm_id = areaid",
+						"     )) ~> areastagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postal_area_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "OSM releation > Polygon > Postal Area",
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmarea"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstaging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "areastagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "areapolygonstagging"
+						},
+						{
+							"name": "postalpointsaggingjoin"
+						},
+						{
+							"name": "addiotnalcol"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          areaid as long,",
+						"          sourcetype as string,",
+						"          boundarytype as string,",
+						"          postalboundary as string,",
+						"          postalcode as string,",
+						"          name as string,",
+						"          country as string,",
+						"          postalpointidosmid as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select por.id areaid, \\nhstore(por.tags) -> \\'source\\' as sourceType,\\nhstore(por.tags) ->\\'type\\' as boundaryType,\\nhstore(por.tags) ->\\'boundary\\' as postalBoundary,\\nhstore(por.tags) ->\\'postal_code\\' as postalCode,\\nhstore(por.tags) ->\\'name\\' as name,\\n\\'BEL\\' as country,\\ncast ( substring(por.members[1],2) as int8) as postalPointIdOsmId\\nfrom planet_osm_rels por',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> osmarea",
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> polygonstagging",
+						"source(output(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> postalpointstaging",
+						"osmarea, polygonstagging join(areaid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> areapolygonstagging",
+						"areapolygonstagging, postalpointstaging join(postalpointidosmid == postal_point_osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> postalpointsaggingjoin",
+						"postalpointsaggingjoin derive(uuid_portalarea = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          updatedate = currentTimestamp()) ~> addiotnalcol",
+						"addiotnalcol sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          postal_code as string,",
+						"          postal_point_id as string,",
+						"          source_type as string,",
+						"          country as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string,",
+						"          area_osm_id as long",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_area_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_area_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = uuid_portalarea,",
+						"          postal_code = postalcode,",
+						"          postal_point_id = id,",
+						"          name,",
+						"          source_type = sourcetype,",
+						"          country = osmarea@country,",
+						"          created_date = createdate,",
+						"          modified_date,",
+						"          geometrytext = polygonstagging@geometrytext,",
+						"          area_osm_id = areaid",
+						"     )) ~> areastagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postal_area_postal_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "OSM releation > Polygon > Postal Area",
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmarea"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstaging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "areastagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "areapolygonstagging"
+						},
+						{
+							"name": "postalpointsaggingjoin"
+						},
+						{
+							"name": "addiotnalcol"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          areaid as long,",
+						"          sourcetype as string,",
+						"          boundarytype as string,",
+						"          postalboundary as string,",
+						"          postalcode as string,",
+						"          name as string,",
+						"          country as string,",
+						"          postalpointidosmid as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select por.id areaid, \\nhstore(por.tags) -> \\'source\\' as sourceType,\\nhstore(por.tags) ->\\'type\\' as boundaryType,\\nhstore(por.tags) ->\\'boundary\\' as postalBoundary,\\nhstore(por.tags) ->\\'postal_code\\' as postalCode,\\nhstore(por.tags) ->\\'name\\' as name,\\n\\'BEL\\' as country,\\ncast ( substring(por.members[1],2) as int8) as postalPointIdOsmId\\nfrom planet_osm_rels por',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> osmarea",
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> polygonstagging",
+						"source(output(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> postalpointstaging",
+						"osmarea, polygonstagging join(areaid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> areapolygonstagging",
+						"areapolygonstagging, postalpointstaging join(postalpointidosmid == postal_point_osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> postalpointsaggingjoin",
+						"postalpointsaggingjoin derive(uuid_portalarea = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          updatedate = currentTimestamp()) ~> addiotnalcol",
+						"addiotnalcol sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          name as string,",
+						"          postal_code as string,",
+						"          postal_point_id as string,",
+						"          source_type as string,",
+						"          country as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string,",
+						"          area_osm_id as long",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_area_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_area_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = uuid_portalarea,",
+						"          postal_code = postalcode,",
+						"          postal_point_id = id,",
+						"          name,",
+						"          source_type = sourcetype,",
+						"          country = osmarea@country,",
+						"          created_date = createdate,",
+						"          modified_date,",
+						"          geometrytext = polygonstagging@geometrytext,",
+						"          area_osm_id = areaid",
+						"     )) ~> areastagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postal_point_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "OSM point > postal point",
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpoint"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinpointpointstagging"
+						},
+						{
+							"name": "addeduuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          postalcode as string,",
+						"          postalpointtype as string,",
+						"          postalcodemain as string,",
+						"          postalcodesub as string,",
+						"          sourcetype as string,",
+						"          postalpointgeometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT\\npop.osm_id,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpoint",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"osmpoint, pointstagging join(osmpoint@osm_id == pointstagging@osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinpointpointstagging",
+						"joinpointpointstagging derive(pp_uuid = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          modifydate = currentTimestamp()) ~> addeduuid",
+						"addeduuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = pp_uuid,",
+						"          point_id = uu_id,",
+						"          postal_point_osm_id = osmpoint@osm_id,",
+						"          postal_code = postalcode,",
+						"          postal_point_type = postalpointtype,",
+						"          postal_code_main = postalcodemain,",
+						"          source_type = sourcetype,",
+						"          geometrytext = postalpointgeometry,",
+						"          created_date = createdate,",
+						"          modified_date = modifydate",
+						"     )) ~> postalpointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postal_point_postal_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "OSM point > postal point",
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpoint"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinpointpointstagging"
+						},
+						{
+							"name": "addeduuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          postalcode as string,",
+						"          postalpointtype as string,",
+						"          postalcodemain as string,",
+						"          postalcodesub as string,",
+						"          sourcetype as string,",
+						"          postalpointgeometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT\\npop.osm_id,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpoint",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"osmpoint, pointstagging join(osmpoint@osm_id == pointstagging@osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinpointpointstagging",
+						"joinpointpointstagging derive(pp_uuid = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          modifydate = currentTimestamp()) ~> addeduuid",
+						"addeduuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = pp_uuid,",
+						"          point_id = uu_id,",
+						"          postal_point_osm_id = osmpoint@osm_id,",
+						"          postal_code = postalcode,",
+						"          postal_point_type = postalpointtype,",
+						"          postal_code_main = postalcodemain,",
+						"          source_type = sourcetype,",
+						"          geometrytext = postalpointgeometry,",
+						"          created_date = createdate,",
+						"          modified_date = modifydate",
+						"     )) ~> postalpointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postalarea_polygon_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "osm polygon > postal polygon",
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpolygon"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT ABS(osm_id) as osm_id, st_astext(ST_Multi(\\'GEOMETRYCOLLECTION(\\' || string_agg(ST_AsText(way), \\', \\' ORDER BY osm_id) || \\')\\')) as geometrytext\\nfrom planet_osm_polygon\\nGROUP BY osm_id',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpolygon",
+						"osmpolygon sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update polygon_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id,",
+						"          geometrytext",
+						"     )) ~> polygonstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postalarea_polygon_postal_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "osm polygon > postal polygon",
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpolygon"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT ABS(osm_id) as osm_id, st_astext(ST_Multi(\\'GEOMETRYCOLLECTION(\\' || string_agg(ST_AsText(way), \\', \\' ORDER BY osm_id) || \\')\\')) as geometrytext\\nfrom planet_osm_polygon\\nGROUP BY osm_id',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpolygon",
+						"osmpolygon sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update polygon_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id,",
+						"          geometrytext",
+						"     )) ~> polygonstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postalarea_polygon_stagging')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpolygon"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "polygonstagging"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          geometrytext as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT ABS(osm_id) as osm_id, st_astext(ST_Multi(\\'GEOMETRYCOLLECTION(\\' || string_agg(ST_AsText(way), \\', \\' ORDER BY osm_id) || \\')\\')) as geometrytext\\nfrom planet_osm_polygon\\nGROUP BY osm_id',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpolygon",
+						"osmpolygon sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'polygon_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update polygon_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          osm_id,",
+						"          geometrytext",
+						"     )) ~> polygonstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_postalpoint_stagging')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "osmpoint"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalpointstagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinpointpointstagging"
+						},
+						{
+							"name": "addeduuid"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          postalcode as string,",
+						"          postalpointtype as string,",
+						"          postalcodemain as string,",
+						"          postalcodesub as string,",
+						"          sourcetype as string,",
+						"          postalpointgeometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT\\npop.osm_id,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> osmpoint",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long,",
+						"          lat as integer,",
+						"          lon as integer,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'point_stagging',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"osmpoint, pointstagging join(osmpoint@osm_id == pointstagging@osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinpointpointstagging",
+						"joinpointpointstagging derive(pp_uuid = uuid(),",
+						"          createdate = currentTimestamp(),",
+						"          modifydate = currentTimestamp()) ~> addeduuid",
+						"addeduuid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          point_id as string,",
+						"          postal_point_osm_id as long,",
+						"          postal_code as string,",
+						"          postal_point_type as string,",
+						"          postal_code_main as string,",
+						"          postal_code_sub as string,",
+						"          source_type as string,",
+						"          qa_status as string,",
+						"          violations as string,",
+						"          country as string,",
+						"          attributes as string,",
+						"          created_date as timestamp,",
+						"          modified_date as timestamp,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'postal_point_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update postal_point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id = pp_uuid,",
+						"          point_id = uu_id,",
+						"          postal_point_osm_id = osmpoint@osm_id,",
+						"          postal_code = postalcode,",
+						"          postal_point_type = postalpointtype,",
+						"          postal_code_main = postalcodemain,",
+						"          source_type = sourcetype,",
+						"          geometrytext = postalpointgeometry,",
+						"          created_date = createdate,",
+						"          modified_date = modifydate",
+						"     )) ~> postalpointstagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_test_uuidarray')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ways"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "lines"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "aggtest"
+						}
+					],
+					"transformations": [
+						{
+							"name": "waypointsstagging"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          nodeid as long,",
+						"          wayid as long,",
+						"          tags as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags\\nfrom planet_osm_ways w',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> ways",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"source(output(",
+						"          osm_id as long,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select abs(osm_id) as osm_id , way  from planet_osm_line pol ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> lines",
+						"ways, pointstagging join(nodeid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> waypointsstagging",
+						"waypointsstagging aggregate(groupBy(wayid,",
+						"          tags),",
+						"     nodesArray = collect(uu_id)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          way_osm_id as long,",
+						"          points as string[],",
+						"          attributes as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'agg_test',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          way_osm_id = wayid,",
+						"          attributes = tags,",
+						"          points = nodesArray",
+						"     )) ~> aggtest"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_way_point_agg')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "way > point agg ",
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ways"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "lines"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "aggtest"
+						}
+					],
+					"transformations": [
+						{
+							"name": "waypointsstagging"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          nodeid as long,",
+						"          wayid as long,",
+						"          tags as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags\\nfrom planet_osm_ways w',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> ways",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"source(output(",
+						"          osm_id as long,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select abs(osm_id) as osm_id , way  from planet_osm_line pol ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> lines",
+						"ways, pointstagging join(nodeid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> waypointsstagging",
+						"waypointsstagging aggregate(groupBy(wayid,",
+						"          tags),",
+						"     nodesArray = collect(uu_id)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          way_osm_id as long,",
+						"          points as string[],",
+						"          attributes as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_point_agg',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          way_osm_id = wayid,",
+						"          attributes = tags,",
+						"          points = nodesArray",
+						"     )) ~> aggtest"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_way_point_agg_admin_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "way > point agg ",
+				"folder": {
+					"name": "Belgium_Admin"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ways"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "linepointagg"
+						}
+					],
+					"transformations": [
+						{
+							"name": "waypointsstagging"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          nodeid as long,",
+						"          wayid as long,",
+						"          tags as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags from planet_osm_ways w',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> ways",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"ways, pointstagging join(nodeid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> waypointsstagging",
+						"waypointsstagging aggregate(groupBy(wayid,",
+						"          tags),",
+						"     nodesArray = collect(uu_id)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          way_osm_id as long,",
+						"          points as string[],",
+						"          attributes as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_point_agg',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          way_osm_id = wayid,",
+						"          attributes = tags,",
+						"          points = nodesArray",
+						"     )) ~> linepointagg"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_way_point_agg_admin_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "way > point agg ",
+				"folder": {
+					"name": "France_Admin"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ways"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql3",
+								"type": "LinkedServiceReference"
+							},
+							"name": "linepointagg"
+						}
+					],
+					"transformations": [
+						{
+							"name": "waypointsstagging"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          nodeid as long,",
+						"          wayid as long,",
+						"          tags as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags from planet_osm_ways w',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> ways",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"ways, pointstagging join(nodeid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> waypointsstagging",
+						"waypointsstagging aggregate(groupBy(wayid,",
+						"          tags),",
+						"     nodesArray = collect(uu_id)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          way_osm_id as long,",
+						"          points as string[],",
+						"          attributes as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_point_agg',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          way_osm_id = wayid,",
+						"          attributes = tags,",
+						"          points = nodesArray",
+						"     )) ~> linepointagg"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_way_point_agg_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "way > point agg ",
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ways"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointstagging"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "lines"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "aggtest"
+						}
+					],
+					"transformations": [
+						{
+							"name": "waypointsstagging"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          nodeid as long,",
+						"          wayid as long,",
+						"          tags as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags\\nfrom planet_osm_ways w',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> ways",
+						"source(output(",
+						"          uu_id as string,",
+						"          osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
+						"source(output(",
+						"          osm_id as long,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select abs(osm_id) as osm_id , way  from planet_osm_line pol ',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> lines",
+						"ways, pointstagging join(nodeid == osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> waypointsstagging",
+						"waypointsstagging aggregate(groupBy(wayid,",
+						"          tags),",
+						"     nodesArray = collect(uu_id)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          way_osm_id as long,",
+						"          points as string[],",
+						"          attributes as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_point_agg',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          way_osm_id = wayid,",
+						"          attributes = tags,",
+						"          points = nodesArray",
+						"     )) ~> aggtest"
+					]
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

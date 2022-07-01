@@ -1,0 +1,42 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adfmappoc"
+		},
+		"AzurePostgreSql1_connectionString": {
+			"value": ""
+		},
+		"AzurePostgreSql2_connectionString": {
+			"value": ""
+		},
+		"AzurePostgreSql3_connectionString": {
+			"value": ""
+		},
+		"OutputLinkedService_connectionString": {
+			"value": ""
+		},
+		"Pointsinput_linkedservice_connectionString": {
+			"value": ""
+		},
+		"PostgreSql1_Rakesh_Fra_Admin_connectionString": {
+			"value": ""
+		},
+		"PostgreSql1_Rakesh_Ind_Postal_connectionString": {
+			"value": ""
+		},
+		"linkedservice_Input_connectionString": {
+			"value": ""
+		},
+		"pointoutput_linkedService_connectionString": {
+			"value": ""
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

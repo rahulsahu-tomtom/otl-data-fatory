@@ -1,0 +1,1619 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfmappoc"
+		},
+		"AzurePostgreSql1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzurePostgreSql1'"
+		},
+		"AzurePostgreSql2_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzurePostgreSql2'"
+		},
+		"AzurePostgreSql3_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzurePostgreSql3'"
+		},
+		"OutputLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OutputLinkedService'"
+		},
+		"Pointsinput_linkedservice_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Pointsinput_linkedservice'"
+		},
+		"linkedservice_Input_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedservice_Input'"
+		},
+		"pointoutput_linkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'pointoutput_linkedService'"
+		},
+		"PostgreSql1_Rakesh_Fra_Admin_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'PostgreSql1_Rakesh_Fra_Admin'"
+		},
+		"PostgreSql1_Rakesh_Ind_Postal_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'PostgreSql1_Rakesh_Ind_Postal'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzurePostgreSql1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('AzurePostgreSql1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzurePostgreSql2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"DbName1": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('AzurePostgreSql2_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzurePostgreSql3')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('AzurePostgreSql3_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OutputLinkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('OutputLinkedService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pointsinput_linkedservice')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('Pointsinput_linkedservice_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/linkedservice_Input')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('linkedservice_Input_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pointoutput_linkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzurePostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('pointoutput_linkedService_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/self-integrationRuntime2')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzurePostgredataset2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzurePostgreSql2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DbName1": "postgres"
+					}
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePostgreSql2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PointOutputDataSet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "pointoutput_linkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "osm_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "access",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:housename",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:housenumber",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:interpolation",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "admin_level",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "aerialway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "aeroway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "amenity",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "area",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "barrier",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "bicycle",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "brand",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "bridge",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "boundary",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "building",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "capital",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "construction",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "covered",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "culvert",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "cutting",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "denomination",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "disused",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "ele",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "embankment",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "foot",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "generator:source",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "harbour",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "highway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "historic",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "horse",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "intermittent",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "junction",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "landuse",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "layer",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "leisure",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lock",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "man_made",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "military",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "motorcar",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "name",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "natural",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "office",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "oneway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "operator",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "place",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "population",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "power",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "power_source",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "public_transport",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "railway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "ref",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "religion",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "route",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "service",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "shop",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "sport",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "surface",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "toll",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tourism",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tower:type",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tunnel",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "water",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "waterway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "wetland",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "width",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "wood",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "z_order",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tags",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "way",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "planet_osm_point_test"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/pointoutput_linkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PointsInputDataSet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Pointsinput_linkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "osm_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "access",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:housename",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:housenumber",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "addr:interpolation",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "admin_level",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "aerialway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "aeroway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "amenity",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "area",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "barrier",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "bicycle",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "brand",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "bridge",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "boundary",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "building",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "capital",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "construction",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "covered",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "culvert",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "cutting",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "denomination",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "disused",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "ele",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "embankment",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "foot",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "generator:source",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "harbour",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "highway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "historic",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "horse",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "intermittent",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "junction",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "landuse",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "layer",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "leisure",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lock",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "man_made",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "military",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "motorcar",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "name",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "natural",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "office",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "oneway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "operator",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "place",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "population",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "power",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "power_source",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "public_transport",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "railway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "ref",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "religion",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "route",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "service",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "shop",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "sport",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "surface",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "toll",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tourism",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tower:type",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tunnel",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "water",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "waterway",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "wetland",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "width",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "wood",
+						"type": "text",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "z_order",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "tags",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "way",
+						"type": "USER-DEFINED",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "public",
+					"table": "planet_osm_point"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Pointsinput_linkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataset_Input')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedservice_Input",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "data.txt",
+						"folderPath": "input",
+						"container": "inputcontainer"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedservice_Input')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataset_output')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "OutputLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "result.txt",
+						"folderPath": "output",
+						"container": "inputcontainer"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/OutputLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PostgreSql1_Rakesh_Fra_Admin')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "PostgreSql1_Rakesh_Fra_Admin",
+				"annotations": [],
+				"type": "PostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('PostgreSql1_Rakesh_Fra_Admin_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "self-integrationRuntime2",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/self-integrationRuntime2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PostgreSql1_Rakesh_Ind_Postal')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "PostgreSql1_Rakesh_Ind_Postal",
+				"annotations": [],
+				"type": "PostgreSql",
+				"typeProperties": {
+					"connectionString": "[parameters('PostgreSql1_Rakesh_Ind_Postal_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "self-integrationRuntime2",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/self-integrationRuntime2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/allpointsflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "point"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointsink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumns"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          pointid as long,",
+						"          postalcode as string,",
+						"          postalpointtype as string,",
+						"          postalcodemain as string,",
+						"          postalcodesub as string,",
+						"          sourcetype as string,",
+						"          postalpointgeometry as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'SELECT\\npop.osm_id pointId,\\npop.tags -> \\'postal_code\\' as postalCode,\\npop.tags ->\\'postal_point\\' as postalPointType,\\npop.tags ->\\'postal_code_main\\' as postalCodeMain,\\npop.tags ->\\'postal_code_sub\\' as postalCodeSub,\\n\\'TomTom\\' as sourceType,\\nST_AsText(pop.way) as postalPointGeometry\\nFROM planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> point",
+						"point derive(Uuid = uuid()) ~> derivedColumns",
+						"derivedColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          osm_id as long,",
+						"          metadata as string,",
+						"          geometrytext as string,",
+						"          geometry as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'point_vad',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update point_vad\\nset geometry= ST_GeomFromText(geometrytext)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 0,",
+						"     mapColumn(",
+						"          id = Uuid,",
+						"          osm_id = pointid,",
+						"          geometrytext = postalpointgeometry",
+						"     )) ~> pointsink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePostgreSql1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "Pointsinput_linkedservice",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointsource"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "pointoutput_linkedService",
+								"type": "LinkedServiceReference"
+							},
+							"name": "pointdestination"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          access as string,",
+						"          {addr:housename} as string,",
+						"          {addr:housenumber} as string,",
+						"          {addr:interpolation} as string,",
+						"          admin_level as string,",
+						"          aerialway as string,",
+						"          aeroway as string,",
+						"          amenity as string,",
+						"          area as string,",
+						"          barrier as string,",
+						"          bicycle as string,",
+						"          brand as string,",
+						"          bridge as string,",
+						"          boundary as string,",
+						"          building as string,",
+						"          capital as string,",
+						"          construction as string,",
+						"          covered as string,",
+						"          culvert as string,",
+						"          cutting as string,",
+						"          denomination as string,",
+						"          disused as string,",
+						"          ele as string,",
+						"          embankment as string,",
+						"          foot as string,",
+						"          {generator:source} as string,",
+						"          harbour as string,",
+						"          highway as string,",
+						"          historic as string,",
+						"          horse as string,",
+						"          intermittent as string,",
+						"          junction as string,",
+						"          landuse as string,",
+						"          layer as string,",
+						"          leisure as string,",
+						"          lock as string,",
+						"          man_made as string,",
+						"          military as string,",
+						"          motorcar as string,",
+						"          name as string,",
+						"          natural as string,",
+						"          office as string,",
+						"          oneway as string,",
+						"          operator as string,",
+						"          place as string,",
+						"          population as string,",
+						"          power as string,",
+						"          power_source as string,",
+						"          public_transport as string,",
+						"          railway as string,",
+						"          ref as string,",
+						"          religion as string,",
+						"          route as string,",
+						"          service as string,",
+						"          shop as string,",
+						"          sport as string,",
+						"          surface as string,",
+						"          toll as string,",
+						"          tourism as string,",
+						"          {tower:type} as string,",
+						"          tunnel as string,",
+						"          water as string,",
+						"          waterway as string,",
+						"          wetland as string,",
+						"          width as string,",
+						"          wood as string,",
+						"          z_order as integer,",
+						"          tags as string,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: true,",
+						"     format: 'table',",
+						"     tableName: 'planet_osm_point',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED',",
+						"     batchSize: 1000) ~> pointsource",
+						"pointsource sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          access as string,",
+						"          {addr:housename} as string,",
+						"          {addr:housenumber} as string,",
+						"          {addr:interpolation} as string,",
+						"          admin_level as string,",
+						"          aerialway as string,",
+						"          aeroway as string,",
+						"          amenity as string,",
+						"          area as string,",
+						"          barrier as string,",
+						"          bicycle as string,",
+						"          brand as string,",
+						"          bridge as string,",
+						"          boundary as string,",
+						"          building as string,",
+						"          capital as string,",
+						"          construction as string,",
+						"          covered as string,",
+						"          culvert as string,",
+						"          cutting as string,",
+						"          denomination as string,",
+						"          disused as string,",
+						"          ele as string,",
+						"          embankment as string,",
+						"          foot as string,",
+						"          {generator:source} as string,",
+						"          harbour as string,",
+						"          highway as string,",
+						"          historic as string,",
+						"          horse as string,",
+						"          intermittent as string,",
+						"          junction as string,",
+						"          landuse as string,",
+						"          layer as string,",
+						"          leisure as string,",
+						"          lock as string,",
+						"          man_made as string,",
+						"          military as string,",
+						"          motorcar as string,",
+						"          name as string,",
+						"          natural as string,",
+						"          office as string,",
+						"          oneway as string,",
+						"          operator as string,",
+						"          place as string,",
+						"          population as string,",
+						"          power as string,",
+						"          power_source as string,",
+						"          public_transport as string,",
+						"          railway as string,",
+						"          ref as string,",
+						"          religion as string,",
+						"          route as string,",
+						"          service as string,",
+						"          shop as string,",
+						"          sport as string,",
+						"          surface as string,",
+						"          toll as string,",
+						"          tourism as string,",
+						"          {tower:type} as string,",
+						"          tunnel as string,",
+						"          water as string,",
+						"          waterway as string,",
+						"          wetland as string,",
+						"          width as string,",
+						"          wood as string,",
+						"          z_order as integer,",
+						"          tags as string,",
+						"          way as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'planet_osm_point_test',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     mapColumn(",
+						"          each(match(true()))",
+						"     )) ~> pointdestination"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Pointsinput_linkedservice')]",
+				"[concat(variables('factoryId'), '/linkedServices/pointoutput_linkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person2"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person12"
+						}
+					],
+					"transformations": [
+						{
+							"name": "personsjoin"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          personid as integer,",
+						"          lastname as string,",
+						"          firstname as string,",
+						"          address as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: true,",
+						"     format: 'table',",
+						"     tableName: 'persons1',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> person1",
+						"source(output(",
+						"          personid as integer,",
+						"          lastname as string,",
+						"          firstname as string,",
+						"          address as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'persons2',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> person2",
+						"person1, person2 union(byName: true)~> personsjoin",
+						"personsjoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'persons12',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> person12"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePostgreSql1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow3')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "points"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          capital as string,",
+						"          name as string,",
+						"          place as string,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select osm_id, capital , \"name\" , place, ST_AsText(way) as way  from planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> points",
+						"points sink(allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          capital as string,",
+						"          name as string,",
+						"          place as string,",
+						"          way as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'planet_osm_point_test3',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update planet_osm_point_test3\\nset way3 = ST_GeomFromText(way)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzurePostgreSql1')]"
+			]
+		}
+	]
+}
