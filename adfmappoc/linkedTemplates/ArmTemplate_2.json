@@ -13,6 +13,206 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/df_lines_area_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Belgium_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "rels"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalareastagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "lineareastagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "areajoin"
+						},
+						{
+							"name": "derivedcols"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          rel_id as long,",
+						"          ways_uuid as string,",
+						"          membervalue as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select por.id as rel_id, pow.ways_uuid, \\nhstore(por.members) -> concat(\\'w\\',cast(pow.way_osm_id as text)) as membervalue\\nfrom\\nplanet_osm_rels por\\njoin line_stagging pow on concat(\\'w\\',cast(pow.way_osm_id as text))  = ANY(por.members)\\n',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> rels",
+						"source(output(",
+						"          areauuid as string,",
+						"          area_osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id as areauuid, area_osm_id from postal_area_stagging',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> postalareastagging",
+						"rels, postalareastagging join(rel_id == area_osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> areajoin",
+						"areajoin derive(id = uuid()) ~> derivedcols",
+						"derivedcols sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          area_id as string,",
+						"          line_id as string,",
+						"          member_role as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_area_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id,",
+						"          line_id = ways_uuid,",
+						"          area_id = areauuid,",
+						"          member_role = membervalue",
+						"     )) ~> lineareastagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_lines_area_postal_process_copy1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "India_Postal"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "rels"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "postalareastagging"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "lineareastagging"
+						}
+					],
+					"transformations": [
+						{
+							"name": "areajoin"
+						},
+						{
+							"name": "derivedcols"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          rel_id as long,",
+						"          ways_uuid as string,",
+						"          membervalue as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select por.id as rel_id, pow.ways_uuid, \\nhstore(por.members) -> concat(\\'w\\',cast(pow.way_osm_id as text)) as membervalue\\nfrom\\nplanet_osm_rels por\\njoin line_stagging pow on concat(\\'w\\',cast(pow.way_osm_id as text))  = ANY(por.members)\\n',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> rels",
+						"source(output(",
+						"          areauuid as string,",
+						"          area_osm_id as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select id as areauuid, area_osm_id from postal_area_stagging',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> postalareastagging",
+						"rels, postalareastagging join(rel_id == area_osm_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> areajoin",
+						"areajoin derive(id = uuid()) ~> derivedcols",
+						"derivedcols sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id as string,",
+						"          area_id as string,",
+						"          line_id as string,",
+						"          member_role as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'line_area_stagging',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          id,",
+						"          line_id = ways_uuid,",
+						"          area_id = areauuid,",
+						"          member_role = membervalue",
+						"     )) ~> lineareastagging"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_point_admin_process')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1929,225 +2129,6 @@
 						"          attributes = tags,",
 						"          points = nodesArray",
 						"     )) ~> linepointagg"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_way_point_agg_admin_process_copy1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "way > point agg ",
-				"folder": {
-					"name": "France_Admin"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql3",
-								"type": "LinkedServiceReference"
-							},
-							"name": "ways"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql3",
-								"type": "LinkedServiceReference"
-							},
-							"name": "pointstagging"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql3",
-								"type": "LinkedServiceReference"
-							},
-							"name": "linepointagg"
-						}
-					],
-					"transformations": [
-						{
-							"name": "waypointsstagging"
-						},
-						{
-							"name": "aggregate1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          nodeid as long,",
-						"          wayid as long,",
-						"          tags as string",
-						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags from planet_osm_ways w',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> ways",
-						"source(output(",
-						"          uu_id as string,",
-						"          osm_id as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
-						"ways, pointstagging join(nodeid == osm_id,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> waypointsstagging",
-						"waypointsstagging aggregate(groupBy(wayid,",
-						"          tags),",
-						"     nodesArray = collect(uu_id)) ~> aggregate1",
-						"aggregate1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          way_osm_id as long,",
-						"          points as string[],",
-						"          attributes as string",
-						"     ),",
-						"     format: 'table',",
-						"     tableName: 'line_point_agg',",
-						"     schemaName: 'public',",
-						"     deletable: false,",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     upsertable: false,",
-						"     store: 'postgres',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          way_osm_id = wayid,",
-						"          attributes = tags,",
-						"          points = nodesArray",
-						"     )) ~> linepointagg"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_way_point_agg_copy1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "way > point agg ",
-				"folder": {
-					"name": "India_Postal"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "ways"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "pointstagging"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "lines"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "aggtest"
-						}
-					],
-					"transformations": [
-						{
-							"name": "waypointsstagging"
-						},
-						{
-							"name": "aggregate1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          nodeid as long,",
-						"          wayid as long,",
-						"          tags as string",
-						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select  unnest(w.nodes) as nodeid, w.id as wayId, cast(cast(w.tags as hstore) as json) as tags\\nfrom planet_osm_ways w',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> ways",
-						"source(output(",
-						"          uu_id as string,",
-						"          osm_id as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select uu_id , osm_id  from point_stagging ps ',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> pointstagging",
-						"source(output(",
-						"          osm_id as long,",
-						"          way as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select abs(osm_id) as osm_id , way  from planet_osm_line pol ',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> lines",
-						"ways, pointstagging join(nodeid == osm_id,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> waypointsstagging",
-						"waypointsstagging aggregate(groupBy(wayid,",
-						"          tags),",
-						"     nodesArray = collect(uu_id)) ~> aggregate1",
-						"aggregate1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          way_osm_id as long,",
-						"          points as string[],",
-						"          attributes as string",
-						"     ),",
-						"     format: 'table',",
-						"     tableName: 'line_point_agg',",
-						"     schemaName: 'public',",
-						"     deletable: false,",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     upsertable: false,",
-						"     store: 'postgres',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          way_osm_id = wayid,",
-						"          attributes = tags,",
-						"          points = nodesArray",
-						"     )) ~> aggtest"
 					]
 				}
 			},

@@ -13,6 +13,106 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_lines_area_admin_process')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_lines_area_admin_process",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_lines_area_admin_process",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"rels": {},
+									"addressableareastagging": {},
+									"lineareastagging": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "AdminProcessPipeline"
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-06-29T11:28:12Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_lines_area_postal_process')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_lines_area_postal_process",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_lines_area_postal_process",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"rels": {},
+									"postalareastagging": {},
+									"lineareastagging": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "PostalProcessPipeline"
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-06-28T13:20:31Z"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_linestagging')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -982,7 +1082,8 @@
 				"[concat(variables('factoryId'), '/pipelines/pl_postal_point_postal_process')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_postal_area_polygon_postal_process')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_postal_area_postal_porcess')]",
-				"[concat(variables('factoryId'), '/pipelines/pl_way_point_agg_postal_process')]"
+				"[concat(variables('factoryId'), '/pipelines/pl_way_point_agg_postal_process')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_lines_area_postal_process')]"
 			]
 		}
 	]

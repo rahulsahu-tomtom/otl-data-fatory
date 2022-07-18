@@ -13,6 +13,161 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person2"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "person12"
+						}
+					],
+					"transformations": [
+						{
+							"name": "personsjoin"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          personid as integer,",
+						"          lastname as string,",
+						"          firstname as string,",
+						"          address as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: true,",
+						"     format: 'table',",
+						"     tableName: 'persons1',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> person1",
+						"source(output(",
+						"          personid as integer,",
+						"          lastname as string,",
+						"          firstname as string,",
+						"          address as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'persons2',",
+						"     schemaName: 'public',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> person2",
+						"person1, person2 union(byName: true)~> personsjoin",
+						"personsjoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'persons12',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> person12"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow3')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Test"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "points"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzurePostgreSql1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          osm_id as long,",
+						"          capital as string,",
+						"          name as string,",
+						"          place as string,",
+						"          way as string",
+						"     ),",
+						"     allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     query: 'select osm_id, capital , \"name\" , place, ST_AsText(way) as way  from planet_osm_point pop',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_COMMITTED') ~> points",
+						"points sink(allowSchemaDrift: false,",
+						"     validateSchema: false,",
+						"     input(",
+						"          osm_id as long,",
+						"          capital as string,",
+						"          name as string,",
+						"          place as string,",
+						"          way as string",
+						"     ),",
+						"     format: 'table',",
+						"     tableName: 'planet_osm_point_test3',",
+						"     schemaName: 'public',",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     store: 'postgres',",
+						"     postSQLs:['update planet_osm_point_test3\\nset way3 = ST_GeomFromText(way)'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dataflow4')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -2036,206 +2191,6 @@
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_COMMITTED') ~> addressableareastagging",
 						"rels, addressableareastagging join(rel_id == area_osm_id,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> areajoin",
-						"areajoin derive(id = uuid()) ~> derivedcols",
-						"derivedcols sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          id as string,",
-						"          area_id as string,",
-						"          line_id as string,",
-						"          member_role as string",
-						"     ),",
-						"     format: 'table',",
-						"     tableName: 'line_area_stagging',",
-						"     schemaName: 'public',",
-						"     deletable: false,",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     upsertable: false,",
-						"     store: 'postgres',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          id,",
-						"          line_id = ways_uuid,",
-						"          area_id = areauuid,",
-						"          member_role = membervalue",
-						"     )) ~> lineareastagging"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_lines_area_postal_process')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Belgium_Postal"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "rels"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "postalareastagging"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "lineareastagging"
-						}
-					],
-					"transformations": [
-						{
-							"name": "areajoin"
-						},
-						{
-							"name": "derivedcols"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          rel_id as long,",
-						"          ways_uuid as string,",
-						"          membervalue as string",
-						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select por.id as rel_id, pow.ways_uuid, \\nhstore(por.members) -> concat(\\'w\\',cast(pow.way_osm_id as text)) as membervalue\\nfrom\\nplanet_osm_rels por\\njoin line_stagging pow on concat(\\'w\\',cast(pow.way_osm_id as text))  = ANY(por.members)\\n',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> rels",
-						"source(output(",
-						"          areauuid as string,",
-						"          area_osm_id as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select id as areauuid, area_osm_id from postal_area_stagging',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> postalareastagging",
-						"rels, postalareastagging join(rel_id == area_osm_id,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> areajoin",
-						"areajoin derive(id = uuid()) ~> derivedcols",
-						"derivedcols sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          id as string,",
-						"          area_id as string,",
-						"          line_id as string,",
-						"          member_role as string",
-						"     ),",
-						"     format: 'table',",
-						"     tableName: 'line_area_stagging',",
-						"     schemaName: 'public',",
-						"     deletable: false,",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     upsertable: false,",
-						"     store: 'postgres',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          id,",
-						"          line_id = ways_uuid,",
-						"          area_id = areauuid,",
-						"          member_role = membervalue",
-						"     )) ~> lineareastagging"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_lines_area_postal_process_copy1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "India_Postal"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "rels"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "postalareastagging"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzurePostgreSql1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "lineareastagging"
-						}
-					],
-					"transformations": [
-						{
-							"name": "areajoin"
-						},
-						{
-							"name": "derivedcols"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          rel_id as long,",
-						"          ways_uuid as string,",
-						"          membervalue as string",
-						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select por.id as rel_id, pow.ways_uuid, \\nhstore(por.members) -> concat(\\'w\\',cast(pow.way_osm_id as text)) as membervalue\\nfrom\\nplanet_osm_rels por\\njoin line_stagging pow on concat(\\'w\\',cast(pow.way_osm_id as text))  = ANY(por.members)\\n',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_COMMITTED') ~> rels",
-						"source(output(",
-						"          areauuid as string,",
-						"          area_osm_id as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     query: 'select id as areauuid, area_osm_id from postal_area_stagging',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> postalareastagging",
-						"rels, postalareastagging join(rel_id == area_osm_id,",
 						"     joinType:'inner',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
