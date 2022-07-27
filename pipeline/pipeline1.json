@@ -56,6 +56,11 @@
 				"type": "string"
 			}
 		},
+		"variables": {
+			"test": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2022-07-21T12:55:19Z"
 	},
