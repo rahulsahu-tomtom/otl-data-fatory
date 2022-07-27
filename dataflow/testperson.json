@@ -28,7 +28,8 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     schemaName as string",
+				"     schemaName as string,",
+				"     dbName as string",
 				"}",
 				"source(output(",
 				"          personid as integer,",

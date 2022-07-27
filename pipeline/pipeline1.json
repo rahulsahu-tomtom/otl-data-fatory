@@ -22,6 +22,10 @@
 							"schemaName": {
 								"value": "'@{pipeline().parameters.runtimeschema}'",
 								"type": "Expression"
+							},
+							"dbName": {
+								"value": "'@{pipeline().parameters.runtimedbname}'",
+								"type": "Expression"
 							}
 						}
 					},
