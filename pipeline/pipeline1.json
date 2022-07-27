@@ -27,6 +27,16 @@
 								"value": "'@{pipeline().parameters.runtimedbname}'",
 								"type": "Expression"
 							}
+						},
+						"linkedServiceParameters": {
+							"p1": {
+								"linkedService": {
+									"dbName": {
+										"value": "@pipeline().parameters.runtimedbname",
+										"type": "Expression"
+									}
+								}
+							}
 						}
 					},
 					"compute": {
