@@ -37,6 +37,9 @@
 		"parameters": {
 			"runtimeschema": {
 				"type": "String"
+			},
+			"runtimedbname": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
