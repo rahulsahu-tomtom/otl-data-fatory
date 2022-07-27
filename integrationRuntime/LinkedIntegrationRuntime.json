@@ -1,0 +1,12 @@
+{
+	"name": "LinkedIntegrationRuntime",
+	"properties": {
+		"type": "SelfHosted",
+		"typeProperties": {
+			"linkedInfo": {
+				"resourceId": "/subscriptions/15016e0d-82f4-40df-86cf-1beafc768f67/resourcegroups/datafactories/providers/Microsoft.DataFactory/factories/otlvad/integrationruntimes/AzureVMIntegrationRuntime",
+				"authorizationType": "Rbac"
+			}
+		}
+	}
+}

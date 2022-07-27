@@ -1,0 +1,73 @@
+{
+	"name": "testperson",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzurePostgreStagging",
+						"type": "LinkedServiceReference"
+					},
+					"name": "p1"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "PublicDB",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     schemaName as string",
+				"}",
+				"source(output(",
+				"          personid as integer,",
+				"          lastname as string,",
+				"          firstname as string,",
+				"          address as string,",
+				"          city as string,",
+				"          geometrytext as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     query: (concat('Select * from ', $schemaName,'.persons1')),",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_COMMITTED') ~> p1",
+				"p1 derive(city = $schemaName) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          city as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          personid as integer,",
+				"          address as string,",
+				"          geometrytext as string,",
+				"          geometry as string",
+				"     ),",
+				"     format: 'table',",
+				"     tableName: 'persons222',",
+				"     schemaName: 'public',",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     store: 'postgres',",
+				"     postSQLs:['update persons222\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

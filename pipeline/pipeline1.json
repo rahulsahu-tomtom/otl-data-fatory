@@ -3,11 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
-				"type": "Copy",
+				"name": "testperson",
+				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
-					"timeout": "7.00:00:00",
+					"timeout": "1.00:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
@@ -15,43 +15,32 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "BinarySource",
-						"storeSettings": {
-							"type": "AzureBlobStorageReadSettings",
-							"recursive": true
-						},
-						"formatSettings": {
-							"type": "BinaryReadSettings"
+					"dataflow": {
+						"referenceName": "testperson",
+						"type": "DataFlowReference",
+						"parameters": {
+							"schemaName": {
+								"value": "'@{pipeline().parameters.runtimeschema}'",
+								"type": "Expression"
+							}
 						}
 					},
-					"sink": {
-						"type": "BinarySink",
-						"storeSettings": {
-							"type": "AzureBlobStorageWriteSettings"
-						}
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
 					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
-						"referenceName": "dataset_Input",
-						"type": "DatasetReference"
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "dataset_output",
-						"type": "DatasetReference"
-					}
-				]
+					"traceLevel": "Fine"
+				}
 			}
 		],
-		"folder": {
-			"name": "Test"
+		"concurrency": 5,
+		"parameters": {
+			"runtimeschema": {
+				"type": "String"
+			}
 		},
 		"annotations": [],
-		"lastPublishTime": "2022-06-29T11:33:46Z"
+		"lastPublishTime": "2022-07-21T12:55:19Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }

@@ -1,0 +1,54 @@
+{
+	"name": "pointtaggingvad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzurePostgreSql1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "uu_id",
+				"type": "uuid",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "osm_id",
+				"type": "bigint",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "lat",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "lon",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "geometrytext",
+				"type": "text",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "geometry",
+				"type": "USER-DEFINED",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "point_stagging"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

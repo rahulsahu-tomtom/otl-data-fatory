@@ -3,11 +3,11 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "dataflow1",
-				"type": "ExecuteDataFlow",
+				"name": "Lookup1",
+				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
-					"timeout": "1.00:00:00",
+					"timeout": "7.00:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
@@ -15,23 +15,60 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataflow": {
-						"referenceName": "dataflow1",
-						"type": "DataFlowReference"
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"partitionOption": "None"
 					},
-					"integrationRuntime": {
-						"referenceName": "integrationRuntime1",
-						"type": "IntegrationRuntimeReference"
+					"dataset": {
+						"referenceName": "pubictest",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output",
+						"type": "Expression"
 					},
-					"traceLevel": "Fine"
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline1",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"runtimeschema": {
+										"value": "@item()",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
 				}
 			}
 		],
-		"folder": {
-			"name": "Test"
-		},
 		"annotations": [],
-		"lastPublishTime": "2022-06-29T11:33:46Z"
+		"lastPublishTime": "2022-07-21T13:17:23Z"
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
