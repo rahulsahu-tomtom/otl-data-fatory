@@ -213,6 +213,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"country": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "AdminProcessPipeline"
 		},
