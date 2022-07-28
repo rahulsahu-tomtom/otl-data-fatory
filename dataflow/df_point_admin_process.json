@@ -10,7 +10,7 @@
 			"sources": [
 				{
 					"linkedService": {
-						"referenceName": "AzurePostgreSql3",
+						"referenceName": "source_linkedService",
 						"type": "LinkedServiceReference"
 					},
 					"name": "osmnode"
@@ -19,7 +19,7 @@
 			"sinks": [
 				{
 					"linkedService": {
-						"referenceName": "AzurePostgreSql3",
+						"referenceName": "stagging_linkedService",
 						"type": "LinkedServiceReference"
 					},
 					"name": "pointstagging"
@@ -40,7 +40,7 @@
 				"     allowSchemaDrift: false,",
 				"     validateSchema: false,",
 				"     format: 'query',",
-				"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from  planet_osm_nodes',",
+				"     query: 'select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from  bel.planet_osm_nodes',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
 				"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
@@ -56,13 +56,14 @@
 				"     ),",
 				"     format: 'table',",
 				"     tableName: 'point_stagging',",
-				"     schemaName: 'public',",
+				"     schemaName: 'oravad',",
 				"     deletable: false,",
 				"     insertable: true,",
 				"     updateable: false,",
 				"     upsertable: false,",
+				"     truncate: true,",
 				"     store: 'postgres',",
-				"     postSQLs:['update point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
+				"     postSQLs:['update oravad.point_stagging\\nset geometry = ST_GeomFromText(geometrytext)'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
