@@ -43,7 +43,7 @@
 				"     allowSchemaDrift: false,",
 				"     validateSchema: false,",
 				"     format: 'query',",
-				"     query: (concat('select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from ' , 'bel.planet_osm_nodes')),",
+				"     query: (concat('select id, lat, lon , ST_AsText(ST_MakePoint(cast(lon as float)/10000000,cast(lat as float)/10000000)) as gemotext from ' , $schema,'.planet_osm_nodes')),",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_COMMITTED') ~> osmnode",
 				"osmnode derive(uuid = uuid()) ~> osmnodewithuuid",
