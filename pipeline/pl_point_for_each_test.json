@@ -47,33 +47,22 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "df_point_admin_process",
-							"type": "ExecuteDataFlow",
+							"name": "pl_point_admin_process",
+							"type": "ExecutePipeline",
 							"dependsOn": [],
-							"policy": {
-								"timeout": "1.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
 							"userProperties": [],
 							"typeProperties": {
-								"dataflow": {
-									"referenceName": "df_point_admin_process",
-									"type": "DataFlowReference",
-									"parameters": {
-										"schema": {
-											"value": "'@{item()}'",
-											"type": "Expression"
-										}
+								"pipeline": {
+									"referenceName": "pl_point_admin_process",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"country": {
+										"value": "@item()",
+										"type": "Expression"
 									}
-								},
-								"compute": {
-									"coreCount": 8,
-									"computeType": "General"
-								},
-								"traceLevel": "Fine"
+								}
 							}
 						}
 					]
