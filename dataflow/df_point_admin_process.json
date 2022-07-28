@@ -31,9 +31,6 @@
 				}
 			],
 			"scriptLines": [
-				"parameters{",
-				"     schema as string",
-				"}",
 				"source(output(",
 				"          id as long,",
 				"          lat as integer,",
