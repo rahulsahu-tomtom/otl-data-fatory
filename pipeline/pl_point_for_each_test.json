@@ -59,7 +59,7 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"country": {
-										"value": "@item()",
+										"value": "@item().output",
 										"type": "Expression"
 									}
 								}
