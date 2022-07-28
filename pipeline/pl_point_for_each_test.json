@@ -14,7 +14,18 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"query": "select countrycode  from countrylist\n",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "countries",
+						"type": "DatasetReference"
+					}
+				}
 			},
 			{
 				"name": "ForEach1",
@@ -29,6 +40,11 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output",
+						"type": "Expression"
+					},
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "df_point_admin_process",
@@ -45,7 +61,13 @@
 							"typeProperties": {
 								"dataflow": {
 									"referenceName": "df_point_admin_process",
-									"type": "DataFlowReference"
+									"type": "DataFlowReference",
+									"parameters": {
+										"schema": {
+											"value": "'@{item()}'",
+											"type": "Expression"
+										}
+									}
 								},
 								"compute": {
 									"coreCount": 8,
@@ -58,11 +80,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"country": {
-				"type": "string"
-			}
-		},
 		"folder": {
 			"name": "AdminProcessPipeline"
 		},

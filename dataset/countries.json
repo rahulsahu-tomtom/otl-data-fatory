@@ -1,0 +1,23 @@
+{
+	"name": "countries",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "source_linkedService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "countrycode",
+				"type": "character varying",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "public",
+			"table": "countrylist"
+		}
+	}
+}
