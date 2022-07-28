@@ -19,7 +19,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_point_admin_process",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"schema": {
+								"value": "'@{pipeline().parameters.country}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -29,6 +35,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"country": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "AdminProcessPipeline"
 		},
